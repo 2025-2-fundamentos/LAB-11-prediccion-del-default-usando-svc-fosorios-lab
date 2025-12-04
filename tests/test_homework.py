@@ -5,6 +5,7 @@ import gzip
 import json
 import os
 import pickle
+import subprocess
 
 import pandas as pd  # type: ignore
 
@@ -59,6 +60,11 @@ METRICS = [
 #
 def _load_model():
     """Generic test to load a model"""
+    # If the model file is not present, attempt to build it using the
+    # provided helper script. This helps CI environments that run tests
+    # without a pre-generated model file.
+    if not os.path.exists(MODEL_FILENAME):
+        subprocess.run(["python", "scripts\\train_grading_model.py"], check=True)
     assert os.path.exists(MODEL_FILENAME)
     with gzip.open(MODEL_FILENAME, "rb") as file:
         model = pickle.load(file)
